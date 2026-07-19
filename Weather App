@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:380px;
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 10px 20px rgba(0,0,0,.2);
+}
+
+h1{
+    color:#333;
+    margin-bottom:20px;
+}
+
+.search{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.search input{
+    flex:1;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+.search button,
+.location-btn{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    background:#007BFF;
+}
+
+.location-btn{
+    width:100%;
+    margin-bottom:20px;
+}
+
+button:hover{
+    background:#0056b3;
+}
+
+.weather{
+    display:none;
+}
+
+.weather img{
+    width:100px;
+}
+
+.temp{
+    font-size:42px;
+    font-weight:bold;
+    margin:10px 0;
+}
+
+.city{
+    font-size:24px;
+    font-weight:bold;
+}
+
+.details{
+    display:flex;
+    justify-content:space-around;
+    margin-top:20px;
+}
+
+.details div{
+    text-align:center;
+}
+
+.error{
+    color:red;
+    display:none;
+    margin-top:10px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>Weather App</h1>
+
+<div class="search">
+<input type="text" id="cityInput" placeholder="Enter city">
+<button onclick="searchWeather()">Search</button>
+</div>
+
+<button class="location-btn" onclick="getLocationWeather()">
+📍 Current Location
+</button>
+
+<p class="error" id="error">City not found.</p>
+
+<div class="weather" id="weather">
+
+<img id="icon">
+
+<div class="temp" id="temp"></div>
+
+<div class="city" id="city"></div>
+
+<p id="condition"></p>
+
+<div class="details">
+
+<div>
+<h3 id="humidity"></h3>
+<p>Humidity</p>
+</div>
+
+<div>
+<h3 id="wind"></h3>
+<p>Wind</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const apiKey = "YOUR_API_KEY";
+
+async function getWeather(url){
+
+try{
+
+const response = await fetch(url);
+const data = await response.json();
+
+if(data.cod!=200){
+showError();
+return;
+}
+
+document.getElementById("error").style.display="none";
+document.getElementById("weather").style.display="block";
+
+document.getElementById("city").innerHTML =
+data.name + ", " + data.sys.country;
+
+document.getElementById("temp").innerHTML =
+Math.round(data.main.temp) + "°C";
+
+document.getElementById("condition").innerHTML =
+data.weather[0].description;
+
+document.getElementById("humidity").innerHTML =
+data.main.humidity + "%";
+
+document.getElementById("wind").innerHTML =
+data.wind.speed + " km/h";
+
+document.getElementById("icon").src =
+"https://openweathermap.org/img/wn/" +
+data.weather[0].icon +
+"@2x.png";
+
+}catch{
+showError();
+}
+
+}
+
+function searchWeather(){
+
+const city=document.getElementById("cityInput").value.trim();
+
+if(city===""){
+alert("Enter a city name");
+return;
+}
+
+const url=`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+getWeather(url);
+
+}
+
+function getLocationWeather(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(position=>{
+
+const lat=position.coords.latitude;
+const lon=position.coords.longitude;
+
+const url=`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+getWeather(url);
+
+});
+
+}else{
+
+alert("Geolocation not supported.");
+
+}
+
+}
+
+function showError(){
+
+document.getElementById("weather").style.display="none";
+document.getElementById("error").style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>
